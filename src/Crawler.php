@@ -71,11 +71,11 @@ class Crawler
     protected array $allowedMimeTypes = [];
 
     protected static array $defaultClientOptions = [
-        RequestOptions::COOKIES => true,
+        RequestOptions::COOKIES         => true,
         RequestOptions::CONNECT_TIMEOUT => 10,
-        RequestOptions::TIMEOUT => 10,
+        RequestOptions::TIMEOUT         => 10,
         RequestOptions::ALLOW_REDIRECTS => false,
-        RequestOptions::HEADERS => [
+        RequestOptions::HEADERS         => [
             'User-Agent' => self::DEFAULT_USER_AGENT,
         ],
     ];
@@ -272,13 +272,13 @@ class Crawler
     }
 
     /**
-     * @param \Spatie\Crawler\CrawlObservers\CrawlObserver|array[\Spatie\Crawler\CrawlObserver] $crawlObservers
+     * @param   \Spatie\Crawler\CrawlObservers\CrawlObserver|array[\Spatie\Crawler\CrawlObserver] $crawlObservers
      *
      * @return $this
      */
     public function setCrawlObserver($crawlObservers): self
     {
-        if (! is_array($crawlObservers)) {
+        if ( ! is_array($crawlObservers)) {
             $crawlObservers = [$crawlObservers];
         }
 
@@ -320,7 +320,7 @@ class Crawler
     {
         $baseClass = CrawlRequestFulfilled::class;
 
-        if (! is_subclass_of($crawlRequestFulfilledClass, $baseClass)) {
+        if ( ! is_subclass_of($crawlRequestFulfilledClass, $baseClass)) {
             throw InvalidCrawlRequestHandler::doesNotExtendBaseClass($crawlRequestFulfilledClass, $baseClass);
         }
 
@@ -333,7 +333,7 @@ class Crawler
     {
         $baseClass = CrawlRequestFailed::class;
 
-        if (! is_subclass_of($crawlRequestFailedClass, $baseClass)) {
+        if ( ! is_subclass_of($crawlRequestFailedClass, $baseClass)) {
             throw InvalidCrawlRequestHandler::doesNotExtendBaseClass($crawlRequestFailedClass, $baseClass);
         }
 
@@ -353,7 +353,7 @@ class Crawler
     {
         $clientOptions = $this->client->getConfig();
 
-        $headers = array_change_key_case($clientOptions['headers']);
+        $headers               = array_change_key_case($clientOptions['headers']);
         $headers['user-agent'] = $userAgent;
 
         $clientOptions['headers'] = $headers;
@@ -369,7 +369,7 @@ class Crawler
 
         foreach (array_keys($headers) as $name) {
             if (strtolower($name) === 'user-agent') {
-                return (string) $headers[$name];
+                return (string)$headers[$name];
             }
         }
 
@@ -378,7 +378,7 @@ class Crawler
 
     public function getBrowsershot(): Browsershot
     {
-        if (! $this->browsershot) {
+        if ( ! $this->browsershot) {
             $this->browsershot = new Browsershot();
         }
 
@@ -391,11 +391,11 @@ class Crawler
     }
 
     /**
-     * @param \Psr\Http\Message\UriInterface|string $baseUrl
+     * @param   \Psr\Http\Message\UriInterface|string  $baseUrl
      */
     public function startCrawling($baseUrl)
     {
-        if (! $baseUrl instanceof UriInterface) {
+        if ( ! $baseUrl instanceof UriInterface) {
             $baseUrl = new Uri($baseUrl);
         }
 
@@ -415,13 +415,13 @@ class Crawler
 
         $this->robotsTxt = $this->createRobotsTxt($crawlUrl->url);
 
-        if ($this->robotsTxt->allows((string) $crawlUrl->url, $this->getUserAgent()) ||
+        if ($this->robotsTxt->allows((string)$crawlUrl->url, $this->getUserAgent()) ||
             ! $this->respectRobots
         ) {
             $this->addToCrawlQueue($crawlUrl);
         }
 
-        $this->depthTree = new Node((string) $this->baseUrl);
+        $this->depthTree = new Node((string)$this->baseUrl);
 
         $this->startCrawlingQueue();
 
@@ -433,15 +433,15 @@ class Crawler
     public function addToDepthTree(UriInterface $url, UriInterface $parentUrl, Node $node = null): ?Node
     {
         if (is_null($this->maximumDepth)) {
-            return new Node((string) $url);
+            return new Node((string)$url);
         }
 
         $node = $node ?? $this->depthTree;
 
         $returnNode = null;
 
-        if ($node->getValue() === (string) $parentUrl) {
-            $newNode = new Node((string) $url);
+        if ($node->getValue() === (string)$parentUrl) {
+            $newNode = new Node((string)$url);
 
             $node->addChild($newNode);
 
@@ -451,7 +451,7 @@ class Crawler
         foreach ($node->getChildren() as $currentNode) {
             $returnNode = $this->addToDepthTree($url, $parentUrl, $currentNode);
 
-            if (! is_null($returnNode)) {
+            if ( ! is_null($returnNode)) {
                 break;
             }
         }
@@ -467,9 +467,9 @@ class Crawler
         ) {
             $pool = new Pool($this->client, $this->getCrawlRequests(), [
                 'concurrency' => $this->concurrency,
-                'options' => $this->client->getConfig(),
-                'fulfilled' => new $this->crawlRequestFulfilledClass($this),
-                'rejected' => new $this->crawlRequestFailedClass($this),
+                'options'     => $this->client->getConfig(),
+                'fulfilled'   => new $this->crawlRequestFulfilledClass($this),
+                'rejected'    => new $this->crawlRequestFailedClass($this),
             ]);
 
             $promise = $pool->promise();
@@ -512,7 +512,17 @@ class Crawler
 
     public function addToCrawlQueue(CrawlUrl $crawlUrl): self
     {
-        if (! $this->getCrawlProfile()->shouldCrawl($crawlUrl->url)) {
+        foreach ($this->crawlObservers as $crawlObserver) {
+            $modifiedUrl = $crawlObserver->canCrawl($crawlUrl->url);
+
+            if ($modifiedUrl !== $crawlUrl->url) {
+                $crawlUrl->url = $modifiedUrl;
+
+                break;
+            }
+        }
+
+        if ( ! $this->getCrawlProfile()->shouldCrawl($crawlUrl->url)) {
             return $this;
         }
 
@@ -528,12 +538,12 @@ class Crawler
     public function reachedCrawlLimits(): bool
     {
         $totalCrawlLimit = $this->getTotalCrawlLimit();
-        if (! is_null($totalCrawlLimit) && $this->getTotalCrawlCount() >= $totalCrawlLimit) {
+        if ( ! is_null($totalCrawlLimit) && $this->getTotalCrawlCount() >= $totalCrawlLimit) {
             return true;
         }
 
         $currentCrawlLimit = $this->getCurrentCrawlLimit();
-        if (! is_null($currentCrawlLimit) && $this->getCurrentCrawlCount() >= $currentCrawlLimit) {
+        if ( ! is_null($currentCrawlLimit) && $this->getCurrentCrawlCount() >= $currentCrawlLimit) {
             return true;
         }
 
