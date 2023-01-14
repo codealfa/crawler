@@ -13,9 +13,8 @@ abstract class CrawlObserver
      *
      * @param \Psr\Http\Message\UriInterface $url
      */
-    public function willCrawl(UriInterface $url): UriInterface
+    public function willCrawl(UriInterface $url)
     {
-        return $url;
     }
 
     /**
