@@ -545,13 +545,7 @@ class Crawler
         $crawlUrl = CrawlUrl::create($url, $foundOnUrl, $id);
 
         foreach ($this->crawlObservers as $crawlObserver) {
-            $filteredUrl = $crawlObserver->filterCrawlUrl($crawlUrl->url);
-
-            if ($filteredUrl !== $crawlUrl->url) {
-                $crawlUrl->url = $filteredUrl;
-
-                break;
-            }
+            $crawlUrl->url = $crawlObserver->filterCrawlUrl($crawlUrl->url);
         }
 
         return $crawlUrl;
