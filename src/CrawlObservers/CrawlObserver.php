@@ -9,16 +9,17 @@ use Psr\Http\Message\UriInterface;
 abstract class CrawlObserver
 {
     /**
-     * Called when the url get added to the crawl queue to allow for modification
+     * Called when CrawlUrl gets created to allow for modification
      *
      * @param   \Psr\Http\Message\UriInterface  $url
      *
      * @return UriInterface
      */
-    public function canCrawl(UriInterface $url): UriInterface
+    public function filterCrawlUrl(UriInterface $url): UriInterface
     {
         return $url;
     }
+
     /**
      * Called when the crawler will crawl the url.
      *

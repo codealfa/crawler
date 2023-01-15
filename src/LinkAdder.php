@@ -40,7 +40,7 @@ class LinkAdder
                 return strpos($url->getPath(), '/tel:') === false;
             })
             ->each(function (UriInterface $url) use ($foundOnUrl) {
-                $crawlUrl = CrawlUrl::create($url, $foundOnUrl);
+                $crawlUrl = $this->crawler->createCrawlUrl($url, $foundOnUrl);
 
                 $this->crawler->addToCrawlQueue($crawlUrl);
             });
