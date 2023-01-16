@@ -11,6 +11,7 @@ use Spatie\Crawler\CrawlProfiles\CrawlInternalUrls;
 use Spatie\Crawler\CrawlProfiles\CrawlProfile;
 use Spatie\Crawler\CrawlProfiles\CrawlSubdomains;
 use Spatie\Crawler\Exceptions\InvalidCrawlRequestHandler;
+use Spatie\Crawler\Test\TestClasses\CrawlFilter;
 use Spatie\Crawler\Test\TestClasses\CrawlLogger;
 use stdClass;
 
@@ -528,5 +529,34 @@ class CrawlerTest extends TestCase
         $this->assertNotCrawled([['url' => 'http://localhost:8080/invalid-link', 'foundOn' => 'http://localhost:8080/incomplete-href']]);
 
         $this->assertCrawledUrlCount(3);
+    }
+
+
+    protected function modifiedUrls(): array
+    {
+        return [
+            ['url' => 'http://localhost:8080/?dummy=123'],
+            ['url' => 'http://localhost:8080/link1?dummy=123', 'foundOn' => 'http://localhost:8080/?dummy=123'],
+            ['url' => 'http://localhost:8080/link1-prev?dummy=123', 'foundOn' => 'http://localhost:8080/link1?dummy=123'],
+            ['url' => 'http://localhost:8080/link1-next?dummy=123', 'foundOn' => 'http://localhost:8080/link1?dummy=123'],
+            ['url' => 'http://localhost:8080/link2?dummy=123', 'foundOn' => 'http://localhost:8080/?dummy=123'],
+            ['url' => 'http://localhost:8080/link3?dummy=123', 'foundOn' => 'http://localhost:8080/link2?dummy=123'],
+            ['url' => 'http://localhost:8080/notExists?dummy=123', 'foundOn' => 'http://localhost:8080/link3?dummy=123'],
+            ['url' => 'http://example.com/?dummy=123', 'foundOn' => 'http://localhost:8080/link1?dummy=123'],
+            ['url' => 'http://localhost:8080/dir/link4?dummy=123', 'foundOn' => 'http://localhost:8080/?dummy=123'],
+            ['url' => 'http://localhost:8080/dir/link5?dummy=123', 'foundOn' => 'http://localhost:8080/dir/link4?dummy=123'],
+            ['url' => 'http://localhost:8080/dir/subdir/link6?dummy=123', 'foundOn' => 'http://localhost:8080/dir/link5?dummy=123'],
+        ];
+    }
+
+    /** @test */
+    public function it_will_crawl_all_found_modified_urls()
+    {
+        Crawler::create()
+            ->addCrawlObserver(new CrawlFilter())
+            ->addCrawlObserver(new CrawlLogger())
+            ->startCrawling('http://localhost:8080');
+
+        $this->assertCrawledOnce($this->modifiedUrls());
     }
 }
