@@ -15,7 +15,7 @@ abstract class CrawlObserver
      *
      * @return UriInterface
      */
-    public function filterCrawlUrl(UriInterface $url): UriInterface
+    public function modifyCrawlUrl(UriInterface $url): UriInterface
     {
         return $url;
     }

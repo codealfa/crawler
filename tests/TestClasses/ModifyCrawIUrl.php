@@ -8,9 +8,9 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
 use Spatie\Crawler\CrawlObservers\CrawlObserver;
 
-class CrawlFilter extends CrawlObserver
+class ModifyCrawIUrl extends CrawlObserver
 {
-    public function filterCrawlUrl(UriInterface $url): UriInterface
+    public function modifyCrawlUrl(UriInterface $url): UriInterface
     {
         return Uri::withQueryValues($url, ['dummy' => '123']);
     }

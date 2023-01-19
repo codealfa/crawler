@@ -11,7 +11,7 @@ use Spatie\Crawler\CrawlProfiles\CrawlInternalUrls;
 use Spatie\Crawler\CrawlProfiles\CrawlProfile;
 use Spatie\Crawler\CrawlProfiles\CrawlSubdomains;
 use Spatie\Crawler\Exceptions\InvalidCrawlRequestHandler;
-use Spatie\Crawler\Test\TestClasses\CrawlFilter;
+use Spatie\Crawler\Test\TestClasses\ModifyCrawIUrl;
 use Spatie\Crawler\Test\TestClasses\CrawlLogger;
 use stdClass;
 
@@ -553,7 +553,7 @@ class CrawlerTest extends TestCase
     public function it_will_crawl_all_found_modified_urls()
     {
         Crawler::create()
-            ->addCrawlObserver(new CrawlFilter())
+            ->addCrawlObserver(new ModifyCrawIUrl())
             ->addCrawlObserver(new CrawlLogger())
             ->startCrawling('http://localhost:8080');
 
